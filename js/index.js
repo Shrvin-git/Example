@@ -62,12 +62,14 @@ const restetGameBtn = document.querySelector('.reset')
 
 
 const toastElement = document.querySelector('.toast')
-const processBar = document.querySelector('.process')
+const toastMessage = document.querySelector('.toast-message')
+const toastProgress = document.querySelector('.process')
+
+
 const modalScreen = document.querySelector('.modal-screen')
 const modalCard = document.querySelector('.modal-card')
 const modalContent = document.querySelector('.modal-content')
 
-// modalScreen.classList.remove('hidden')
 
 const submitBtn = document.querySelector('.continue')
 const cancelBtn = document.querySelector('#cancel')
@@ -102,9 +104,12 @@ const gameInit = () => {
     )
   })
 
+  document.querySelectorAll('.input')[0].focus()
 }
 
 const checkUserAnswer = () => {
+
+  // restAnswerInput()
 
   let allAnswerInputs = document.querySelectorAll('.input')
 
@@ -115,68 +120,23 @@ const checkUserAnswer = () => {
 
   if (sumCharAnswer === null || sumCharAnswer === undefined || sumCharAnswer === '') {
 
-
-
-
     toastElement.classList.remove('hidden')
-    document.querySelector('.toast-message').innerHTML = 'تمامی اینپوت هارا پر کنید'
     submitBtn.style.cursor = 'not-allowed'
 
-
-    setTimeout(() => {
-      toastElement.classList.add('hidden')
-      //* Change Cursor Button
-      submitBtn.style.cursor = 'pointer'
-
-    }, 2000);
-
+    showToastFailed('تمامی اینپوت هارا پر کنید')
   }
-
 
   else {
 
     if (letterInput.toLocaleUpperCase() === currentQuestion.answer) {
 
-      if (currentIndex > 10) {
-        console.log('شما بردید :))');
-      }
-      else {
 
-        restAnswerUnput()
+      toastElement.classList.remove('hidden')
+      submitBtn.disabled = true
+      submitBtn.style.cursor = 'not-allowed'
 
-        toastElement.classList.remove('hidden')
-        document.querySelector('.toast-message').innerHTML = "جواب شما درست میباشد !"
-        submitBtn.disabled = true
-        submitBtn.style.cursor = 'not-allowed'
-
-
-
-        setTimeout(() => {
-
-          toastElement.classList.add('hidden')
-
-          //* Change Cursor Button
-          submitBtn.style.cursor = 'pointer'
-
-          //* Sum Correct Answer
-          userScoore += currentQuestion.score
-
-          //* Next Question
-          currentIndex++
-          currentQuestion = questions[currentIndex]
-
-          //* Cleare Letter Input
-          writtedText.innerHTML = ''
-
-          submitBtn.disabled = false
-
-          sumScore()
-          clearAnswerInputs()
-          gameInit()
-
-
-        }, 3000);
-      }
+      showToast('success', "جواب شما درست میباشد !")
+      restAnswerInput()
 
     }
 
@@ -191,66 +151,45 @@ const checkUserAnswer = () => {
       }
       else {
 
-
-
         submitBtn.style.cursor = 'not-allowed'
         toastElement.classList.remove('hidden')
-        document.querySelector('.toast-message').innerHTML = "جواب اشتباهه !"
 
-
-        setTimeout(() => {
-
-          //* Change Cursor Button
-          submitBtn.style.cursor = 'pointer'
-
-          //* Cleare Inputs
-          allAnswerInputs.forEach(element => {
-            element.value = null
-          });
-
-          toastElement.classList.add('hidden')
-          chances--
-          guessCount.innerHTML = chances
-        }, 2000);
+        showToastFailed("جواب اشتباهه !")
+        document.querySelectorAll('.input')[0].focus()
+        writtedText.innerHTML = ''
       }
-
     }
-
-
   }
+
 
 }
 
 const inputValueHandler = (event) => {
-  const currentInput = event.target
-  const key = event.inputType
-  const value = currentInput.value
 
-  const inputs = document.querySelectorAll('.input')
-  const currentIndex = Array.from(inputs).indexOf(currentInput)
 
-  // فقط یک کاراکتر توی input نگه دار
-  if (value.length > 1) {
-    currentInput.value = value.charAt(value.length - 1)
-  }
+  const allInputs = document.querySelectorAll('.input')
 
-  // وقتی تایپ کردی بری بعدی
-  if (key === 'insertText' && value.length === 1) {
-    const nextInput = inputs[currentIndex + 1]
-    if (nextInput) nextInput.focus()
-  }
+  allInputs.forEach((input, index) => {
+    input.addEventListener('keyup', (event) => {
 
-  // وقتی پاک کردی بری قبلی
-  if (key === 'deleteContentBackward' && value.length === 0) {
-    const prevInput = inputs[currentIndex - 1]
-    if (prevInput) prevInput.focus()
-  }
 
-  // آپدیت رشته کامل
-  let combined = ''
-  inputs.forEach(input => combined += input.value)
-  letterInput = combined
-  somCharInputs()
+      let { target } = event
+
+      if (target.value.length === 1 && index + 1 < allInputs.length) {
+        allInputs[index + 1].focus()
+      } else if (target.value.length > 1) {
+        target.value = target.value.slice(0, 1)
+        allInputs[index + 1]?.focus()
+      } else if (event.key === 'Backspace') {
+        allInputs[index - 1]?.focus()
+      }
+      letterInput = Array.from(document.querySelectorAll('.input')).map(inp => inp.value).join('');
+      somCharInputs()
+    })
+  });
+
+
+
 }
 
 const somCharInputs = () => {
@@ -269,9 +208,100 @@ const restetGame = () => {
   history.go(0)
 }
 
-const restAnswerUnput = () => {
+const restAnswerInput = () => {
+  if (currentIndex > questions.length) {
+    currentIndex = 0
+    modalScreen.classList.remove('hidden')
+    modalContent.innerHTML = ` شما برنده شدید:)) امتیاز شما ${userScoore} میباشد `
+  }
+}
+
+const showToast = (status, message) => {
+
+  if (status === 'success') {
+    toastElement.className = "toast success";
+  } else {
+    toastElement.className = "toast failed";
+  }
+
+  //* Sum Correct Answer
+  userScoore += currentQuestion.score
+
+
+  //* Next Question
+  currentIndex++
+  currentQuestion = questions[currentIndex]
+
+
+  toastElement.classList.remove("hidden");
+  toastMessage.innerHTML = message;
+
+
+  let toastProgressCounter = 0;
+
+  const toastProgressInterval = setInterval(() => {
+    toastProgressCounter++;
+
+    if (toastProgressCounter > 100) {
+      toastProgress.style.width = "0%";
+      toastElement.classList.add('hidden')
+
+
+      //* Cleare Letter Input
+      writtedText.innerHTML = ''
+
+      //* Change Cursor Button
+      submitBtn.style.cursor = 'pointer'
+      submitBtn.disabled = false
+
+      sumScore()
+      clearAnswerInputs()
+      gameInit()
+
+
+      clearInterval(toastProgressInterval);
+    }
+
+    toastProgress.style.width = `${toastProgressCounter}%`;
+
+  }, 40);
+};
+
+const showToastFailed = (message) => {
+
+  toastElement.className = 'toast error'
+  toastMessage.innerHTML = message
+
+
+  let toastProgressCounter = 0
+
+  const toastProgressInterval = setInterval(() => {
+
+    toastProgressCounter++
+
+    let allAnswerInputs = document.querySelectorAll('.input')
+
+    if (toastProgressCounter > 100) {
+
+      allAnswerInputs.forEach(element => {
+        element.value = null
+      });
+
+      toastElement.classList.add('hidden')
+      submitBtn.style.cursor = 'pointer'
+      chances--
+      guessCount.innerHTML = chances
+      clearInterval(toastProgressInterval)
+    }
+
+
+    toastProgress.style.width = toastProgressCounter + '%'
+
+  }, 40);
+
 
 }
+
 
 
 window.addEventListener('load', gameInit)
