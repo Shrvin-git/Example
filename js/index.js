@@ -105,6 +105,7 @@ const gameInit = () => {
   })
 
   document.querySelectorAll('.input')[0].focus()
+  title.innerHTML = `بازی حدس کلمه ${currentQuestion.answer} `
 }
 
 const checkUserAnswer = () => {
