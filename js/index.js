@@ -76,7 +76,7 @@ const cancelBtn = document.querySelector('#cancel')
 const tryAgainBtn = document.querySelector('#try-again')
 
 
-const title = document.querySelector('.game-card-title')
+
 
 let sumCharAnswer = ''
 let letterInput = ''
@@ -105,8 +105,6 @@ const gameInit = () => {
   })
 
   document.querySelectorAll('.input')[0].focus()
-
-  title.innerHTML = `بازی حدس کلمه ${currentQuestion.answer} `
 
 }
 
@@ -212,7 +210,7 @@ const restetGame = () => {
 }
 
 const restAnswerInput = () => {
-  if (currentIndex > questions.length) {
+  if (currentIndex >= 10) {
     currentIndex = 0
     modalScreen.classList.remove('hidden')
     modalContent.innerHTML = ` شما برنده شدید:)) امتیاز شما ${userScoore} میباشد `
@@ -260,7 +258,7 @@ const showToast = (status, message) => {
       sumScore()
       clearAnswerInputs()
       gameInit()
-
+      restAnswerInput()
 
       clearInterval(toastProgressInterval);
     }
