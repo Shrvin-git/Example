@@ -75,6 +75,7 @@ const submitBtn = document.querySelector('.continue')
 const cancelBtn = document.querySelector('#cancel')
 const tryAgainBtn = document.querySelector('#try-again')
 
+const title = document.querySelector('.game-card-title')
 
 
 
