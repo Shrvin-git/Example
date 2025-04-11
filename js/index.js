@@ -110,7 +110,7 @@ const gameInit = () => {
 
 const checkUserAnswer = () => {
 
-  // restAnswerInput()
+  // showEndGame()
 
   let allAnswerInputs = document.querySelectorAll('.input')
 
@@ -137,7 +137,7 @@ const checkUserAnswer = () => {
       submitBtn.style.cursor = 'not-allowed'
 
       showToast('success', "جواب شما درست میباشد !")
-      restAnswerInput()
+      showEndGame()
 
     }
 
@@ -209,16 +209,16 @@ const restetGame = () => {
   history.go(0)
 }
 
-const restAnswerInput = () => {
-  if (currentIndex >= 10) {
-    currentIndex = 0
-    modalScreen.classList.remove('hidden')
-    modalContent.innerHTML = ` شما برنده شدید:)) امتیاز شما ${userScoore} میباشد `
+const showEndGame = () => {
+  if (currentIndex >= questions.length) {
+    modalScreen.classList.remove('hidden');
+    modalContent.innerHTML = `شما برنده شدید:)) امتیاز شما ${userScoore} میباشد`;
+    submitBtn.disabled = true; // غیرفعال کردن دکمه ارسال
+    submitBtn.style.cursor = 'not-allowed';
   }
-}
+};
 
 const showToast = (status, message) => {
-
   if (status === 'success') {
     toastElement.className = "toast success";
   } else {
@@ -226,17 +226,18 @@ const showToast = (status, message) => {
   }
 
   //* Sum Correct Answer
-  userScoore += currentQuestion.score
-
+  userScoore += currentQuestion.score;
 
   //* Next Question
-  currentIndex++
-  currentQuestion = questions[currentIndex]
-
+  currentIndex++;
+  if (currentIndex >= questions.length) {
+    showEndGame(); // بررسی پایان بازی
+    return; // جلوگیری از ادامه اجرای کد
+  }
+  currentQuestion = questions[currentIndex];
 
   toastElement.classList.remove("hidden");
   toastMessage.innerHTML = message;
-
 
   let toastProgressCounter = 0;
 
@@ -245,26 +246,23 @@ const showToast = (status, message) => {
 
     if (toastProgressCounter > 100) {
       toastProgress.style.width = "0%";
-      toastElement.classList.add('hidden')
-
+      toastElement.classList.add('hidden');
 
       //* Cleare Letter Input
-      writtedText.innerHTML = ''
+      writtedText.innerHTML = '';
 
       //* Change Cursor Button
-      submitBtn.style.cursor = 'pointer'
-      submitBtn.disabled = false
+      submitBtn.style.cursor = 'pointer';
+      submitBtn.disabled = false;
 
-      sumScore()
-      clearAnswerInputs()
-      gameInit()
-      restAnswerInput()
+      sumScore();
+      clearAnswerInputs();
+      gameInit();
 
       clearInterval(toastProgressInterval);
     }
 
     toastProgress.style.width = `${toastProgressCounter}%`;
-
   }, 40);
 };
 
